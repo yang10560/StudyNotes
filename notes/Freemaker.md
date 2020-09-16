@@ -159,3 +159,147 @@ ${foo}
 C:\foo\bar
 ```
 
+
+
+如果插值在 [文本 区](http://freemarker.foofun.cn/dgui_template_overallstructure.html) (也就是说，不在 [字符串表达式](http://freemarker.foofun.cn/dgui_template_exp.html#dgui_template_exp_stringop_interpolation) 中)，如果 [`escape` 指令](http://freemarker.foofun.cn/ref_directive_escape.html#ref.directive.escape) 起作用了，那么将被插入的字符串会被自动转义。如果要生成HTML， 那么强烈建议你利用它来阻止跨站脚本攻击和非格式良好的HTML页面。这里有一个示例：
+
+```
+<#escape x as x?html>
+  ...
+  <p>Title: ${book.title}</p>
+  <p>Description: <#noescape>${book.description}</#noescape></p>
+  <h2>Comments:</h2>
+  <#list comments as comment>
+    <div class="comment">
+      ${comment}
+    </div>
+  </#list>
+  ...
+</#escape>
+```
+
+
+
+### 自定义指令
+
+```
+自定义指令可以有多个参数。
+<#macro greet person color>
+  <font size="+2" color="${color}">Hello ${person}!</font>
+</#macro>
+
+<@greet person="Fred" color="black"/>
+
+
+```
+
+### 嵌套内容
+
+自定义指令可以嵌套内容，和预定义指令相似：
+
+```
+`<#if *...*>*nested content*</#if>`。
+```
+
+```
+<#macro border>
+  <table border=4 cellspacing=0 cellpadding=4><tr><td>
+    <#nested>
+  </tr></td></table>
+</#macro>
+<@border>The bordered text</@border>
+
+output:
+<table border=4 cellspacing=0 cellpadding=4><tr><td>
+    The bordered text
+  </td></tr></table>
+  
+```
+
+`nested` 指令也可以多次被调用，例如：
+
+```
+<#macro do_thrice>
+  <#nested>
+  <#nested>
+  <#nested>
+</#macro>
+<@do_thrice>
+  Anything.
+</@do_thrice>
+
+output:
+<@greet person="Joe">
+  Anything.
+</@greet>
+```
+
+嵌套的内容可以是任意有效的FTL，包含其他的用户自定义指令.
+
+在嵌套的内容中，宏的 [局部变量](http://freemarker.foofun.cn/dgui_misc_var.html) 是不可见的。
+
+```
+<#macro repeat count>
+  <#local y = "test">
+  <#list 1..count as x>
+    ${y} ${count}/${x}: <#nested>
+  </#list>
+</#macro>
+<@repeat count=3>${y!"?"} ${x!"?"} ${count!"?"}</@repeat>
+
+output:
+    test 3/1: ? ? ?
+    test 3/2: ? ? ?
+    test 3/3: ? ? ?
+```
+
+### 命名空间
+
+```
+<#macro copyright date>
+  <p>Copyright (C) ${date} Julia Smith. All rights reserved.</p>
+</#macro>
+
+<#assign mail = " xxxx@acme.com">
+
+<#import "/lib/my_test.ftl" as my> <#-- the hash called "my" will be the "gate" -->
+<@my.copyright date="1999-2002"/>
+${my.mail}
+
+Output:
+<p>Copyright (C) 1999-2002 Julia Smith. All rights reserved.</p>
+xxxx@acme.com
+```
+
+### 空白处理
+
+使用compress指令
+
+```
+<#compress>
+<#assign users = [{"name":"Joe",        "hidden":false},
+                  {"name":"James Bond", "hidden":true},
+                  {"name":"Julia",      "hidden":false}]>
+List of users:
+<#list users as user>
+  <#if !user.hidden>
+  - ${user.name}
+  </#if>
+</#list>
+That's all.
+</#compress>
+
+Output:
+List of users:
+- Joe
+- Julia
+That's all.
+
+```
+
+在默认情况下，名为 `compress` 的用户自定义指令是可以在数据模型中存在的(由于向下兼容特性)。 这和指令是相同的，除了可以选择设置 `single_line` 参数， 这将会移除所有的介于其中的换行符
+
+```
+<@compress single_line=true>...</@compress>
+```
+
