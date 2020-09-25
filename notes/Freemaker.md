@@ -2,7 +2,7 @@
 
 ###  if
 
-```
+```xml
 <#if animals.python.price < animals.elephant.price>
   Pythons are cheaper than elephants today.
 <#else>
@@ -21,7 +21,7 @@
 
 ###   list
 
-```
+```xml
 
 <#list animals as animal>
    <tr><td>${animal.name}<td>${animal.price} Euros
@@ -37,7 +37,7 @@
 
 使用 `include` 指令， 我们可以在模板中插入其他文件的内容。
 
-```
+```xml
 <html>
 <head>
   <title>Test page</title>
@@ -83,13 +83,13 @@
 
 不论在哪里引用变量，都可以指定一个默认值来避免变量丢失这种情况， 通过在变量名后面跟着一个 `!`(叹号，译者注)和默认值。
 
-```
+```xml
 <h1>Welcome ${user!"visitor"}!</h1>
 ```
 
 也可以在变量名后面通过放置 `??` 来询问一个变量是否存在。将它和 `if` 指令合并， 那么如果 `user` 变量不存在的话将会忽略整个问候的代码段：
 
-```
+```xml
 <#if user??><h1>Welcome ${user}!</h1></#if>
 ```
 
@@ -150,7 +150,7 @@
 
 原生字符串是一种特殊的字符串。在原生字符串中， 反斜杠和 `${` 没有特殊含义， 它们被视为普通的字符。为了表明字符串是原生字符串， 在开始的引号或单引号之前放置字母`r`
 
-```
+```xml
 ${r"${foo}"}
 ${r"C:\foo\bar"}
 
@@ -163,7 +163,7 @@ C:\foo\bar
 
 如果插值在 [文本 区](http://freemarker.foofun.cn/dgui_template_overallstructure.html) (也就是说，不在 [字符串表达式](http://freemarker.foofun.cn/dgui_template_exp.html#dgui_template_exp_stringop_interpolation) 中)，如果 [`escape` 指令](http://freemarker.foofun.cn/ref_directive_escape.html#ref.directive.escape) 起作用了，那么将被插入的字符串会被自动转义。如果要生成HTML， 那么强烈建议你利用它来阻止跨站脚本攻击和非格式良好的HTML页面。这里有一个示例：
 
-```
+```xml
 <#escape x as x?html>
   ...
   <p>Title: ${book.title}</p>
@@ -182,7 +182,7 @@ C:\foo\bar
 
 ### 自定义指令
 
-```
+```xml
 自定义指令可以有多个参数。
 <#macro greet person color>
   <font size="+2" color="${color}">Hello ${person}!</font>
@@ -197,11 +197,11 @@ C:\foo\bar
 
 自定义指令可以嵌套内容，和预定义指令相似：
 
-```
+```xml
 `<#if *...*>*nested content*</#if>`。
 ```
 
-```
+```xml
 <#macro border>
   <table border=4 cellspacing=0 cellpadding=4><tr><td>
     <#nested>
@@ -218,7 +218,7 @@ output:
 
 `nested` 指令也可以多次被调用，例如：
 
-```
+```xml
 <#macro do_thrice>
   <#nested>
   <#nested>
@@ -238,7 +238,7 @@ output:
 
 在嵌套的内容中，宏的 [局部变量](http://freemarker.foofun.cn/dgui_misc_var.html) 是不可见的。
 
-```
+```xml
 <#macro repeat count>
   <#local y = "test">
   <#list 1..count as x>
@@ -255,7 +255,7 @@ output:
 
 ### 命名空间
 
-```
+```xml
 <#macro copyright date>
   <p>Copyright (C) ${date} Julia Smith. All rights reserved.</p>
 </#macro>
@@ -275,7 +275,7 @@ xxxx@acme.com
 
 使用compress指令
 
-```
+```xml
 <#compress>
 <#assign users = [{"name":"Joe",        "hidden":false},
                   {"name":"James Bond", "hidden":true},
@@ -299,7 +299,7 @@ That's all.
 
 在默认情况下，名为 `compress` 的用户自定义指令是可以在数据模型中存在的(由于向下兼容特性)。 这和指令是相同的，除了可以选择设置 `single_line` 参数， 这将会移除所有的介于其中的换行符
 
-```
+```xml
 <@compress single_line=true>...</@compress>
 ```
 

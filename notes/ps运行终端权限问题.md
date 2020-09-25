@@ -2,7 +2,7 @@
 
 
 
-##  在通过vs code 运行webpack进行打包时，报错webpack : 无法加载文件 xxxx\webpack.ps1，因为在此系统上禁止运行脚本。
+###  在通过vs code 运行webpack进行打包时，报错webpack : 无法加载文件 xxxx\webpack.ps1，因为在此系统上禁止运行脚本。
 **解决方案：
 以管理员身份运行vs code
 执行：get-ExecutionPolicy，显示Restricted，表示状态是禁止的
