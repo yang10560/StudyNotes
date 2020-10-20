@@ -344,5 +344,57 @@ INSERT INTO `user_course` VALUES ('7', '3', '4');
       
       ```
 
-      
+
+​    
+### 深入理解Hibernate三种状态
+
+
+
+状态之间如何转换
+
+![](\pics\hbn.png)
+
+```java
+1. Save和Update：save的时候是将自由态的对象持久化到数据库中，而update的时候一般是将游离态的对象持久化到数据库中去。
+
+2. update、saveOrUpdate、merge：saveOrUpdate的作用是当Session中存在要操作的对象的时候，抛出异常信息，当不存在的时候，如果这个对象没有持久化标识属性，那么将这个对象save，如果这个对象有持久化标识属性的话，那么直接update就可以了。对于单纯的update来说，程序会在一个Session中加载对象，然后将这个对象关闭，然后这个对象发生变化之后，再update的时候就会打开另一个Session将对象持久化到数据库中去。merge的话是当Session中存在要操作的对象的时候，不会抛出异常而是直接将这个对象的数据拷贝到Session中持久态的对象中去，这样对象还是维持着原来的状态。
+
+3.persist和save：都是用来保存临时对象到数据库的，但是persist并不保证对象的主键立即被创建好，有可能推迟到flush的时候。但是save的时候会立即创建好的，所以save的时候一般可以通过对象拿到主键值。
+
+4. flush和update：update的时候对象多是游离态的对象，也就是说数据库中已经存在了，但是并不在Session中的对象通过update会更新到数据库当中去。而flush是将本来持久态的数据更新到数据库中去。
+
+5. lock是将一个没有更改过的托管的对象转为持久态的对象，但是他不能针对那些delete后的托管的对象。
+
+User user = new User();
+user.setName("wy");
+//目前还是一个临时对象
+Session session = sessionFactory.openSession();
+Tansaction tx = session.beginTansaction();
+//目前还是一个临时对象
+session.save(user);
+//user处于持久态了
+tx.commit();
+session.close();// 游离态了
+```
+
+``` java
+问题在哪里
+      Hibernate分为三种基本的状态：游离态、自由态（临时状态）、持久态。
+      持久化状态：与session关联并且和在数据库有数据，已经持久化了并且在数据库的缓存当中了。
+      我这里的这个对象应该是持久化状态的对象然后我直接构造了一个user对象的set集合，同时对这个对象进行set操作，那么缓存Session中的数据发生改变，那么接着数据库也会跟着进行相应的改变。所以就执行了update的更新操作。
+
+
+怎么解决
+     其他两种状态：
+     1. 临时状态：就是直接new出来的对象，既没有持久化到数据库中去，也没有在session当中。
+     2. 游离状态：在Session中没有了，但是已经持久化到了数据库当中。
+     
+     那么这个地方怎么解决呢？
+     1.如果这个对象（例子中的company）本身不需要用的话,可以直接new一个Company的对象出来然后再setUsers这个时候因为不是Session中的数据，那么不会因为对象的属性发生改变而同步到数据库中去。
+     2. 如果这个对象（例子中的company）要用的到，那么，在set之前可以先将其转为游离态，这样的话会用到session的几个方法：close、clear、evict。
+     close方法：关闭session这样这个对象肯定是游离态了，因为session已经关闭了，但是往往我们实际的开发过程中，session在后面是要用的到的，所以这个方法可行，但是不一定用得上，分清具体的情况。
+     clear方法：将session中的所有的对象全部清除出缓存，这个方式有点劳师动众，不过session清除了全部的对象之后自然就会变为游离态了，这样做不是很好吧我感觉。
+     evict方法：将某一个对象清除出缓存session，这个方法是很好的实现方式，推荐使用。调用的时候是这样的，session.evict(Object obj);这样就可以了。
+
+```
 
